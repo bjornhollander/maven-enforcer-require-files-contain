@@ -1,11 +1,5 @@
 package nl.bjovin.enforcer;
 
-import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
-import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
-import org.apache.maven.project.MavenProject;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,9 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
+import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
+import org.apache.maven.project.MavenProject;
+
 @Named("requireFilesContain")
 public class RequireFilesContain extends AbstractEnforcerRule {
+    private static final String ANSI_YELLOW = "\u001B[33m";
+    private static final String ANSI_RESET = "\u001B[0m";
 
+    private boolean fail;
     @Inject
     private MavenProject project;
     @Inject
@@ -48,8 +52,9 @@ public class RequireFilesContain extends AbstractEnforcerRule {
         });
 
         if (!results.isEmpty()) {
+            System.out.println("["+ ANSI_YELLOW + "WARNING" + ANSI_RESET + "] Not all files contain pattern: " + pattern);
             results.stream().sorted().forEach(System.out::println);
-            throw new EnforcerRuleException("Not all files contain pattern: " + pattern);
+            if (fail) throw new EnforcerRuleException("Not all files contain pattern: " + pattern);
         }
     }
 
